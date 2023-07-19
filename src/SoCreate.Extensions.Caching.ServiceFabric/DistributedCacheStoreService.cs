@@ -68,6 +68,8 @@ namespace SoCreate.Extensions.Caching.ServiceFabric
 
         protected virtual int MaxCacheSizeInMegabytes { get { return DefaultCacheSizeInMegabytes; } }
 
+        protected virtual bool AllowReadSecondary { get { return false; } }
+
         public async Task<byte[]> GetCachedItemAsync(string key)
         {
             var cacheStore = await StateManager.GetOrAddAsync<IReliableDictionary<string, CachedItem>>(CacheStoreName);
@@ -78,7 +80,7 @@ namespace SoCreate.Extensions.Caching.ServiceFabric
                 return await cacheStore.TryGetValueAsync(tx, key);
             });
 
-            if (cacheResult.HasValue)
+            if (cacheResult.HasValue && AllowReadSecondary )
             {
                 var cachedItem = cacheResult.Value;
                 var expireTime = cachedItem.AbsoluteExpiration;
